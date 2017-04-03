@@ -184,21 +184,26 @@ public class ChatClient {
      */
     private void send() {
 
-        String text = input.getText();
-        input.setText("");
+        try {
+            String text = input.getText();
+            input.setText("");
 
-        if (text.length() == 0) {
-            return;
+            if (text.length() == 0) {
+                return;
+            }
+
+            if (text.startsWith("!")) {
+                handleCommand(text);
+                return;
+            }
+
+            Message message = new Message(myId, otherId, new Date(), text);
+            postMessage(message);
+            printSentMessage(message);
         }
-
-        if (text.startsWith("!")) {
-            handleCommand(text);
-            return;
+        catch (ClientHandlerException ex) {
+            printStatus("Error: " + ex.getMessage());
         }
-
-        Message message = new Message(myId, otherId, new Date(), text);
-        postMessage(message);
-        printSentMessage(message);
     }
 
     /**
@@ -263,7 +268,8 @@ public class ChatClient {
      *
      * @param message the message to be posted.
      */
-    private void postMessage(Message message) {
+    private void postMessage(Message message) throws ClientHandlerException {
+
         Client client = Client.create();
         WebResource resource =
                 client.resource(url + "/send");
