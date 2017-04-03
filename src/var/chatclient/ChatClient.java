@@ -34,7 +34,6 @@ import com.sun.jersey.api.client.WebResource;
  */
 public class ChatClient {
 
-
     /** String for date parsing in ISO 8601 format. */
     public static final String ISO8601 = "yyyy-MM-dd'T'HH:mm:ssZ";
 
@@ -296,7 +295,9 @@ public class ChatClient {
         if (args.length < 3) {
             System.err.println("Missing option:");
             System.err.println("  Parameters: URL myID otherID");
+            System.exit(1);
         }
+
         url = args[0];
         myId = args[1];
         otherId = args[2];
