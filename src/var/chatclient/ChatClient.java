@@ -227,11 +227,9 @@ public class ChatClient {
     private Message[] readMessage(String user, int sequence) {
         try {
             Client client = Client.create();
-            WebResource resource =
-                  client.resource(String.format("%s/messages/%s/%d", url, user, sequence));
-            resource.accept("text/json");
-
-            String result = resource.get(String.class);
+            String result = client.resource(String.format("%s/messages/%s/%d", url, user, sequence))
+            .accept(MediaType.APPLICATION_JSON)
+            .get(String.class);
             JSONArray obj = new JSONArray(result);
 
             Message[] messages = new Message[obj.length()];
@@ -271,11 +269,10 @@ public class ChatClient {
     private void postMessage(Message message) throws ClientHandlerException {
 
         Client client = Client.create();
-        WebResource resource =
-                client.resource(url + "/send");
-        resource.accept(MediaType.APPLICATION_JSON);
-
-        resource.put(message.toString());
+        client.resource(url + "/send")
+        .accept(MediaType.APPLICATION_JSON)
+        .type(MediaType.APPLICATION_JSON)
+        .put(message.toString());
         client.destroy();
     }
 
