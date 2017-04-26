@@ -27,7 +27,6 @@ import org.json.JSONObject;
 import com.sun.jersey.api.client.Client;
 import com.sun.jersey.api.client.ClientHandlerException;
 import com.sun.jersey.api.client.UniformInterfaceException;
-import com.sun.jersey.api.client.WebResource;
 
 /**
  * Simple chat client UI to test the servers.
@@ -227,9 +226,11 @@ public class ChatClient {
     private Message[] readMessage(String user, int sequence) {
         try {
             Client client = Client.create();
-            String result = client.resource(String.format("%s/messages/%s/%d", url, user, sequence))
-            .accept(MediaType.APPLICATION_JSON)
-            .get(String.class);
+            String result = client.resource(
+                        String.format("%s/messages/%s/%d", url, user, sequence))
+                    .accept(MediaType.APPLICATION_JSON)
+                    .get(String.class);
+
             JSONArray obj = new JSONArray(result);
 
             Message[] messages = new Message[obj.length()];
@@ -270,9 +271,9 @@ public class ChatClient {
 
         Client client = Client.create();
         client.resource(url + "/send")
-        .accept(MediaType.APPLICATION_JSON)
-        .type(MediaType.APPLICATION_JSON)
-        .put(message.toString());
+            .accept(MediaType.APPLICATION_JSON)
+            .type(MediaType.APPLICATION_JSON)
+            .put(message.toString());
         client.destroy();
     }
 
