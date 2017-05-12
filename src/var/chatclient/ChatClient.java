@@ -34,7 +34,7 @@ import com.sun.jersey.api.client.UniformInterfaceException;
 public class ChatClient {
 
     /** String for date parsing in ISO 8601 format. */
-    public static final String ISO8601 = "yyyy-MM-dd'T'HH:mm:ssZ";
+    public static final String ISO8601 = "yyyy-MM-dd'T'HH:mm:ss'Z'";
 
     /** My handle. */
     private static String myId = "tom";
