@@ -3,6 +3,8 @@ package var.chatclient;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
+import org.json.JSONObject;
+
 /**
  * Chat message.
  */
@@ -60,8 +62,13 @@ class Message {
     public String toString() {
         SimpleDateFormat sdf = new SimpleDateFormat(ChatClient.ISO8601);
 
-        return String.format("{ 'from': '%s', 'to': '%s', 'date': '%s', 'text': '%s'}".replace('\'',  '"'),
-                from, to, sdf.format(new Date()), text);
+        JSONObject json = new JSONObject();
+        json.put("from" , from);
+        json.put("to" , to);
+        json.put("date", sdf.format(new Date()));
+        json.put("text", text);
+
+        return json.toString();
     }
 }
 
