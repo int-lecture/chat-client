@@ -254,9 +254,10 @@ public class ChatClient {
             // ignore errors more or less
             return new Message[0];
         } catch (JSONException e) {
+            printStatus(e.toString());
             return new Message[0];
-
         } catch (ParseException e) {
+            printStatus(e.toString());
             return new Message[0];
         }
     }
