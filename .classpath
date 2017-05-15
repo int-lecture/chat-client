@@ -1,15 +1,29 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <classpath>
-  <classpathentry kind="src" path="src/main/java" including="**/*.java"/>
-  <classpathentry kind="output" path="target/classes"/>
-  <classpathentry kind="var" path="M2_REPO/javax/ws/rs/jsr311-api/1.1.1/jsr311-api-1.1.1.jar"/>
-  <classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/JavaSE-1.8"/>
-  <classpathentry kind="var" path="M2_REPO/junit/junit/3.8.1/junit-3.8.1.jar"/>
-  <classpathentry kind="var" path="M2_REPO/org/json/json/20160810/json-20160810.jar"/>
-  <classpathentry kind="var" path="M2_REPO/com/sun/jersey/jersey-client/1.19.1/jersey-client-1.19.1.jar"/>
-  <classpathentry kind="var" path="M2_REPO/com/sun/jersey/jersey-core/1.19.1/jersey-core-1.19.1.jar"/>
-  <classpathentry kind="var" path="M2_REPO/org/apache/httpcomponents/httpclient/4.5.3/httpclient-4.5.3.jar"/>
-  <classpathentry kind="var" path="M2_REPO/org/apache/httpcomponents/httpcore/4.4.6/httpcore-4.4.6.jar"/>
-  <classpathentry kind="var" path="M2_REPO/commons-logging/commons-logging/1.2/commons-logging-1.2.jar"/>
-  <classpathentry kind="var" path="M2_REPO/commons-codec/commons-codec/1.9/commons-codec-1.9.jar"/>
+	<classpathentry including="**/*.java" kind="src" path="src/main/java"/>
+	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/JavaSE-1.8"/>
+	<classpathentry kind="lib" path="/libraries/lib/httpcomponents-client/commons-codec-1.9.jar"/>
+	<classpathentry kind="lib" path="/libraries/lib/httpcomponents-client/commons-logging-1.2.jar"/>
+	<classpathentry kind="lib" path="/libraries/lib/httpcomponents-client/httpclient-4.5.3.jar" sourcepath="/libraries/srcs/httpcomponents-client-4.5.3-src.zip"/>
+	<classpathentry kind="lib" path="/libraries/lib/httpcomponents-core/httpcore-4.4.6.jar" sourcepath="/libraries/srcs/httpcomponents-core-4.4.6-src.zip"/>
+	<classpathentry kind="lib" path="/libraries/lib/jersey/jersey-client-1.19.1.jar">
+		<attributes>
+			<attribute name="javadoc_location" value="jar:platform:/resource/libraries/doc/jersey/jersey.zip!/"/>
+		</attributes>
+	</classpathentry>
+	<classpathentry kind="lib" path="/libraries/lib/jersey/jersey-core-1.19.1.jar">
+		<attributes>
+			<attribute name="javadoc_location" value="jar:platform:/resource/libraries/doc/jersey/jersey.zip!/"/>
+		</attributes>
+	</classpathentry>
+	<classpathentry kind="lib" path="/libraries/lib/jersey/jsr311-api-1.1.1.jar">
+		<attributes>
+			<attribute name="javadoc_location" value="jar:platform:/resource/libraries/doc/jersey/jsr311.zip!/"/>
+		</attributes>
+	</classpathentry>
+	<classpathentry kind="lib" path="/libraries/lib/junit/hamcrest-core-1.3.jar"/>
+	<classpathentry kind="lib" path="/libraries/lib/junit/hamcrest-library-1.3.jar"/>
+	<classpathentry kind="lib" path="/libraries/lib/junit/junit-4.12.jar"/>
+	<classpathentry kind="lib" path="/libraries/lib/json/json-20160810.jar"/>
+	<classpathentry kind="output" path="target/classes"/>
 </classpath>
