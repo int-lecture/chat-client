@@ -1,12 +1,12 @@
-package var.chatclient;
+package var.chat.client;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.net.MalformedURLException;
-import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.StringTokenizer;
 
 import javax.swing.JButton;
 import javax.swing.JFrame;
@@ -20,8 +20,6 @@ import javax.swing.text.SimpleAttributeSet;
 import javax.swing.text.StyleConstants;
 import javax.ws.rs.core.MediaType;
 
-import org.json.JSONArray;
-import org.json.JSONException;
 import org.json.JSONObject;
 
 import com.sun.jersey.api.client.Client;
@@ -33,17 +31,17 @@ import com.sun.jersey.api.client.UniformInterfaceException;
  */
 public class ChatClient {
 
-    /** String for date parsing in ISO 8601 format. */
-    public static final String ISO8601 = "yyyy-MM-dd'T'HH:mm:ss'Z'";
-
     /** My handle. */
     private static String myId = "tom";
 
     /** Handle of the communication partner. */
     private static String otherId = "bob";
 
-    /** Server URL. */
-    private static String url = "http://localhost:5000";
+    /** Chat-Server URL. */
+    private static String chatServer = "http://localhost:5000";
+
+    /** Login-Server URL. */
+    private static String loginServer = "http://localhost:5001";
 
     /** Style for my messages. */
     private SimpleAttributeSet styleSendMessages = new SimpleAttributeSet();
@@ -57,7 +55,15 @@ public class ChatClient {
     /** Sequence number of last message seen. */
     private int lastSequence = 0;
 
-    JFrame frame = new JFrame("Chat: " + myId + " <-> " + otherId + " | server: " + url);
+    /** Token received at login. */
+    private static String loginToken;
+
+    /**
+     * Communication helper.
+     */
+    private Communication com = new Communication(loginServer, chatServer);
+
+    JFrame frame = new JFrame("Chat: " + myId + " <-> " + otherId + " | server: " + chatServer);
     JTextPane log = new JTextPane();
     JTextField input = new JTextField(50);
     JPanel inputPanel = new JPanel();
@@ -152,6 +158,11 @@ public class ChatClient {
      * @param command the command
      */
     private void handleCommand(String command) {
+        if (command.startsWith("!login")) {
+            cmdLogin(command);
+            return;
+        }
+
         switch (command) {
             case "!clear":
                 cmdClear();
@@ -159,8 +170,31 @@ public class ChatClient {
             case "!status":
                 cmdShowStatus();
                 break;
+            case "!logout":
+                loginToken = null;
+                printStatus("Logged out");
+                break;
             default:
                 printStatus(String.format("Unknown command '%s'", command));
+        }
+    }
+
+    /**
+     * Log in the user to the server.
+     * @param command
+     */
+    private void cmdLogin(String command) {
+        String payLoad = command.replace("!login ", "");
+        StringTokenizer st = new StringTokenizer(payLoad, ":");
+        String user = st.nextToken();
+        String pwd = st.nextToken();
+        String theToken = com.login(user, pwd, myId);
+        if (theToken == null) {
+            printStatus("Falscher User/Password");
+        }
+        else {
+            loginToken = theToken;
+            printStatus("Logged in. Token=" + theToken);
         }
     }
 
@@ -168,7 +202,12 @@ public class ChatClient {
      * Show status.
      */
     private void cmdShowStatus() {
-        printStatus(String.format("Connected to %s.\nTalking with %s. Last message ID %d\n", url, otherId, lastSequence));
+        printStatus(String.format("Connected to %s.\nTalking with %s. Last message ID %d", chatServer, otherId, lastSequence));
+        printStatus(String.format("Token: %s", loginToken));
+
+        if (loginToken == null) {
+            printStatus("Use '!login username:password' to log in");
+        }
     }
 
     /**
@@ -197,7 +236,7 @@ public class ChatClient {
             }
 
             Message message = new Message(myId, otherId, new Date(), text);
-            postMessage(message);
+            postMessage(message, loginToken);
             printSentMessage(message);
         }
         catch (ClientHandlerException ex) {
@@ -210,56 +249,11 @@ public class ChatClient {
      *
      * @param user The user to fetch messages for.
      * @param sequence Sequence number of last message seen.
+     * @param theToken the security token
      */
-    private void receiveAndPrintMessages(String user, int sequence) {
-        Message[] m = readMessage(user, sequence);
+    private void receiveAndPrintMessages(String user, int sequence, String theToken) {
+        Message[] m = com.readMessage(user, sequence, theToken, this::printStatus);
         displayMessages(m);
-    }
-
-    /**
-     * Fetch messages from the server and return them.
-     *
-     * @param user The user to fetch messages for.
-     * @param sequence Sequence number of last message seen.
-     * @return the messages.
-     */
-    private Message[] readMessage(String user, int sequence) {
-        try {
-            Client client = Client.create();
-            String result = client.resource(
-                        String.format("%s/messages/%s/%d", url, user, sequence))
-                    .accept(MediaType.APPLICATION_JSON)
-                    .get(String.class);
-
-            JSONArray obj = new JSONArray(result);
-
-            Message[] messages = new Message[obj.length()];
-
-            SimpleDateFormat sdf = new SimpleDateFormat(ISO8601);
-            for (int i = 0; i < obj.length(); i++) {
-                JSONObject jo = obj.getJSONObject(i);
-                Message message = new Message(jo.getString("from"),
-                        jo.getString("to"),
-                        sdf.parse(jo.getString("date")),
-                        jo.getString("text"),
-                        jo.getInt("sequence"));
-                messages[i] = message;
-
-            }
-            client.destroy();
-
-            return messages;
-        }
-        catch (UniformInterfaceException | ClientHandlerException e) {
-            // ignore errors more or less
-            return new Message[0];
-        } catch (JSONException e) {
-            printStatus(e.toString());
-            return new Message[0];
-        } catch (ParseException e) {
-            printStatus(e.toString());
-            return new Message[0];
-        }
     }
 
 
@@ -267,15 +261,25 @@ public class ChatClient {
      * Post a message to the server.
      *
      * @param message the message to be posted.
+     * @param loginToken the security token
      */
-    private void postMessage(Message message) throws ClientHandlerException {
+    private void postMessage(Message message, String theToken)
+            throws ClientHandlerException {
 
-        Client client = Client.create();
-        client.resource(url + "/send")
-            .accept(MediaType.APPLICATION_JSON)
-            .type(MediaType.APPLICATION_JSON)
-            .put(message.toString());
-        client.destroy();
+        JSONObject json = message.toJSON();
+        json.put("token", loginToken);
+
+        try {
+            Client client = Client.create();
+            client.resource(chatServer + "/send")
+                .accept(MediaType.APPLICATION_JSON)
+                .type(MediaType.APPLICATION_JSON)
+                .put(json.toString());
+            client.destroy();
+        }
+        catch (UniformInterfaceException e) {
+            printStatus(e.getMessage());
+        }
     }
 
     /**
@@ -297,22 +301,23 @@ public class ChatClient {
      */
     public static void main(String[] args) throws MalformedURLException {
 
-        if (args.length < 3) {
+        if (args.length < 4) {
             System.err.println("Missing option:");
-            System.err.println("  Parameters: URL myID otherID");
+            System.err.println("  Parameters: ChatURL LoginURL myID otherID");
             System.exit(1);
         }
 
-        url = args[0];
-        myId = args[1];
-        otherId = args[2];
+        chatServer = args[0];
+        loginServer = args[1];
+        myId = args[2];
+        otherId = args[3];
 
         ChatClient mw = new ChatClient();
 
         new Thread(new Runnable() {
             public void run() {
                 while (true) {
-                    mw.receiveAndPrintMessages(myId, mw.lastSequence);
+                    mw.receiveAndPrintMessages(myId, mw.lastSequence, loginToken);
                     try {
                         Thread.sleep(500);
                     }

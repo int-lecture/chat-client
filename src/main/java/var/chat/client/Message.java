@@ -1,4 +1,4 @@
-package var.chatclient;
+package var.chat.client;
 
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -60,7 +60,11 @@ class Message {
      */
     @Override
     public String toString() {
-        SimpleDateFormat sdf = new SimpleDateFormat(ChatClient.ISO8601);
+        return toJSON().toString();
+    }
+
+    public JSONObject toJSON() {
+        SimpleDateFormat sdf = new SimpleDateFormat(Communication.ISO8601);
 
         JSONObject json = new JSONObject();
         json.put("from" , from);
@@ -68,7 +72,7 @@ class Message {
         json.put("date", sdf.format(new Date()));
         json.put("text", text);
 
-        return json.toString();
+        return json;
     }
 }
 

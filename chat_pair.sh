@@ -1,3 +1,3 @@
 #!/bin/sh
-./client.sh bob tom &
-./client.sh tom bob &
+./client.sh alf bob &
+./client.sh bob alf &
